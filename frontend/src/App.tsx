@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Camera, CheckCircle2, XCircle, UserCheck } from "lucide-react";
-
+import Webcam from "react-webcam";
 // Mock Data for the Table
 const initialStudents = [
   { id: 1, name: "Ivan Rossi", time: "10:02 AM", status: "Present" },
@@ -10,6 +10,8 @@ const initialStudents = [
 
 export default function App() {
   const [students] = useState(initialStudents);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const webcamRef = useRef<Webcam>(null);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-purple-500/30">

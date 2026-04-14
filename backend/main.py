@@ -15,6 +15,14 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"status": "AI Backend Running"}
+@app.post("/detect")
+async def detect_face(file: UploadFile = File(...)):
+
+    return {
+        "message": "Image received!",
+        "filename": file.filename,
+        "identity": "Analyzing..."
+    }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

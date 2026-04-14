@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Camera, CheckCircle2, XCircle, UserCheck } from "lucide-react";
 
+import { HeaderView } from "./components/HeaderView.tsx";
+
 // Mock Data for the Table
 const initialStudents = [
   { id: 1, name: "Ivan Rossi", time: "10:02 AM", status: "Present" },
@@ -14,16 +16,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-purple-500/30">
       {/* 1. BIG TITLE SECTION */}
-      <header className="pt-12 pb-8 text-center">
-        <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 animate-pulse">
-            Neural Face Analysis
-          </span>
-        </h1>
-        <p className="text-gray-500 mt-2 tracking-widest text-sm uppercase">
-          Intelligent Systems v1.0
-        </p>
-      </header>
+      <HeaderView />
 
       <main className="max-w-6xl mx-auto px-6 grid grid-cols-1 gap-12 pb-20">
         {/* 2. CAMERA FEED SECTION (CENTERED) */}

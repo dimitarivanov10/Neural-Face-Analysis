@@ -15,6 +15,7 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"status": "AI Backend Running"}
+    
 @app.post("/detect")
 async def detect_face(file: UploadFile = File(...)):
 

@@ -1,6 +1,3 @@
-import React, { useState, useRef } from "react";
-import { CheckCircle2, XCircle } from "lucide-react";
-
 import { HeaderView } from "./components/HeaderView.tsx";
 import { CameraSectionView } from "./components/CameraSectionView.tsx";
 import { TableSectionView } from "./components/TableSectionView.tsx";

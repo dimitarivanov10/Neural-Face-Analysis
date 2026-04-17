@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 import { HeaderView } from "./components/HeaderView.tsx";

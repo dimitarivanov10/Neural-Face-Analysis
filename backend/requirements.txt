@@ -5,4 +5,3 @@ opencv-python
 numpy
 keras-facenet
 tensorflow
-cv2

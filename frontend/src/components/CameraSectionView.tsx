@@ -1,14 +1,24 @@
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
-import { UserCheck, RefreshCw } from "lucide-react";
+import { UserCheck, RefreshCw, ShieldCheck } from "lucide-react";
 
 export function CameraSectionView() {
   const webcamRef = useRef<Webcam>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Store detection results
+  const [detection, setDetection] = useState<{
+    identity: string;
+    box: number[] | null; // [x, y, w, h]
+    confidence: number;
+  }>({
+    identity: "Scanning...",
+    box: null,
+    confidence: 0,
+  });
+
   const handleScan = useCallback(async () => {
     if (!webcamRef.current) return;
-    setIsAnalyzing(true);
 
     const imageSrc = webcamRef.current.getScreenshot();
     if (imageSrc) {
@@ -23,50 +33,82 @@ export function CameraSectionView() {
         });
 
         const data = await response.json();
-        alert(`Recognized: ${data.identity}`);
+
+        // Update state instead of alerting
+        setDetection({
+          identity: data.identity,
+          box: data.box,
+          confidence: data.confidence || 0,
+        });
       } catch (error) {
         console.error("Connection failed:", error);
       }
     }
-    setIsAnalyzing(false);
   }, [webcamRef]);
+
+  // AUTO-LOOP: Runs every 600ms for a "real-time" feel without melting the CPU
+  useEffect(() => {
+    const interval = setInterval(() => {
+      handleScan();
+    }, 600);
+    return () => clearInterval(interval);
+  }, [handleScan]);
 
   return (
     <section className="flex flex-col items-center justify-center">
       <div className="relative group w-full max-w-2xl">
-        {" "}
-        {/* Added width constraint here */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-red-600 via-green-500 to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-75 transition duration-1000 animate-rainbow-slow"></div>
+        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-green-500 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+
         <div className="relative w-full aspect-video bg-black border border-white/10 rounded-xl overflow-hidden shadow-2xl">
-          {/* THE ACTUAL WEBCAM (Replaces the <Camera /> icon) */}
           <Webcam
             audio={false}
             ref={webcamRef}
             screenshotFormat="image/jpeg"
-            className="w-full h-full object-cover scale-x-[-1]"
+            className="w-full h-full object-cover scale-x-[-1]" // MIRRORED
             videoConstraints={{ facingMode: "user" }}
           />
 
-          <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 rounded-full">
-            <div className="w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
-            <span className="text-[10px] font-bold text-red-500 tracking-wider uppercase">
-              Live Feed
+          {/* --- FACE BOX OVERLAY --- */}
+          {detection.box && (
+            <div
+              className="absolute border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] transition-all duration-300"
+              style={{
+                // MATH TO FLIP BOX: (100% width) - (x position) - (box width)
+                // This accounts for the scale-x-[-1] mirroring
+                left: `calc(100% - ${detection.box[0]}px - ${detection.box[2]}px)`,
+                top: `${detection.box[1]}px`,
+                width: `${detection.box[2]}px`,
+                height: `${detection.box[3]}px`,
+              }}
+            >
+              {/* Identity Label */}
+              <div className="absolute -top-8 left-0 flex items-center gap-2 bg-green-500 text-white text-[10px] font-black px-2 py-1 uppercase tracking-tighter rounded-t-md">
+                <ShieldCheck size={12} />
+                {detection.identity} {Math.round(detection.confidence * 100)}%
+              </div>
+            </div>
+          )}
+
+          {/* Status Badge */}
+          <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1 bg-black/50 backdrop-blur-md border border-white/10 rounded-full">
+            <div
+              className={`w-2 h-2 rounded-full ${detection.identity !== "Stranger" && detection.identity !== "No face detected" ? "bg-green-500 animate-pulse" : "bg-red-500"}`}
+            ></div>
+            <span className="text-[10px] font-bold text-white tracking-wider uppercase">
+              AI System: {detection.identity}
             </span>
           </div>
         </div>
       </div>
 
+      {/* Manual Refresh button in case it hangs */}
       <button
-        onClick={handleScan}
-        disabled={isAnalyzing}
-        className="mt-8 px-8 py-3 bg-white text-black font-bold rounded-full hover:bg-gray-200 disabled:bg-gray-500 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+        onClick={() =>
+          setDetection({ identity: "Resetting...", box: null, confidence: 0 })
+        }
+        className="mt-6 text-gray-500 hover:text-white flex items-center gap-2 text-xs uppercase tracking-widest transition-colors"
       >
-        {isAnalyzing ? (
-          <RefreshCw className="animate-spin" size={20} />
-        ) : (
-          <UserCheck size={20} />
-        )}
-        {isAnalyzing ? "Processing AI..." : "Scan Identity"}
+        <RefreshCw size={14} /> Clear Cache
       </button>
     </section>
   );

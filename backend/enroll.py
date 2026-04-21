@@ -8,8 +8,8 @@ embedder = FaceNet()
 
 def generate_embeddings():
     database = {}
-    base_path = r"C:\Users\ppish\Neural-Face-Analysis\data\known_faces"
-    for person_name in os.listdir(base_path):
+base_path = os.path.join("..", "data", "known_faces")
+for person_name in os.listdir(base_path):
         person_dir = os.path.join(base_path, person_name)
         if not os.path.isdir(person_dir):
             continue

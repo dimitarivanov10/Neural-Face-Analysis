@@ -1,12 +1,34 @@
 import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
-import { Camera, Trash2, UserPlus } from "lucide-react";
+// Added Upload here
+import { Camera, Trash2, UserPlus, Upload } from "lucide-react";
 
 export function RegisterView() {
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [studentName, setStudentName] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const webcamRef = useRef<Webcam>(null);
+
+  // 1. THE MISSING FUNCTION
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    // Convert to array and only take what we need to reach 10
+    const filesArray = Array.from(files).slice(0, 10 - capturedImages.length);
+
+    filesArray.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCapturedImages((prev) => {
+          // Check again inside the loop to ensure we don't exceed 10 due to rapid uploads
+          if (prev.length >= 10) return prev;
+          return [...prev, reader.result as string];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
   const captureFrame = () => {
     if (capturedImages.length >= 10) return;
@@ -52,7 +74,7 @@ export function RegisterView() {
 
   return (
     <div className="flex flex-col items-center gap-8 py-10">
-      {/* 1. NAME INPUT */}
+      {/* ... (Keep your existing JSX) ... */}
       <div className="w-full max-w-md">
         <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2">
           Student Identity
@@ -66,7 +88,6 @@ export function RegisterView() {
         />
       </div>
 
-      {/* 2. WEBCAM BOX */}
       <div className="relative group w-full max-w-xl">
         <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-20 animate-pulse"></div>
         <div className="relative aspect-video bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
@@ -76,8 +97,6 @@ export function RegisterView() {
             screenshotFormat="image/jpeg"
             className="w-full h-full object-cover scale-x-[-1]"
           />
-
-          {/* Progress Overlay */}
           <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-2 rounded-lg border border-white/5">
             <div className="flex justify-between text-[10px] uppercase mb-1">
               <span>Biometric Capture</span>
@@ -93,16 +112,30 @@ export function RegisterView() {
         </div>
       </div>
 
-      {/* 3. CONTROL BUTTONS */}
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-center">
         <button
           onClick={captureFrame}
           disabled={capturedImages.length >= 10}
-          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-full transition-all"
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-bold rounded-full transition-all"
         >
           <Camera size={20} />
-          {capturedImages.length >= 10 ? "Capacity Reached" : "Capture Frame"}
+          Capture
         </button>
+
+        <label
+          className={`flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-bold rounded-full cursor-pointer transition-all ${capturedImages.length >= 10 ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          <Upload size={20} />
+          Upload Files
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            disabled={capturedImages.length >= 10}
+            onChange={handleFileUpload}
+          />
+        </label>
 
         <button
           onClick={() => setCapturedImages([])}
@@ -112,7 +145,6 @@ export function RegisterView() {
         </button>
       </div>
 
-      {/* 4. THUMBNAIL GRID */}
       <div className="grid grid-cols-5 gap-2 w-full max-w-2xl">
         {Array.from({ length: 10 }).map((_, i) => (
           <div
@@ -132,7 +164,6 @@ export function RegisterView() {
         ))}
       </div>
 
-      {/* 5. FINAL SUBMIT */}
       <button
         onClick={submitRegistration}
         disabled={capturedImages.length < 10 || !studentName || isUploading}

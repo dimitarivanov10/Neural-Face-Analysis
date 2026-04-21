@@ -1,5 +1,6 @@
 import os
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Form
+import shutil
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -29,6 +30,22 @@ async def detect_face(file: UploadFile = File(...)):
         "filename": file.filename,
         "identity": "Analyzing..."
     }
+@app.post("/register")
+async def register_student(name: str = Form(...), images: list[UploadFile] = File(...)):
+    try:
+        # 1. Create a folder for the student
+        student_folder = os.path.join(DATA_DIR, name.replace(" ", "_"))
+        os.makedirs(student_folder, exist_ok=True)
+
+        # 2. Save the images
+        for i, image in enumerate(images):
+            file_path = os.path.join(student_folder, f"face_{i}.jpg")
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+
+        return {"status": "success", "message": f"Registered {name} successfully!"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

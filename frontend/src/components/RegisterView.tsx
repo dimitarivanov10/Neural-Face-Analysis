@@ -1,8 +1,11 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Webcam from "react-webcam";
+import { Camera, Trash2, UserPlus } from "lucide-react";
 
 export function RegisterView() {
   const [capturedImages, setCapturedImages] = useState<string[]>([]);
+  const [studentName, setStudentName] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const webcamRef = useRef<Webcam>(null);
 
   const captureFrame = () => {
@@ -12,19 +15,137 @@ export function RegisterView() {
       setCapturedImages((prev) => [...prev, imageSrc]);
     }
   };
-  const submitRegistration = async (name: string) => {
-    const formData = new FormData();
-    formData.append("name", name);
 
-    for (let i = 0; i < capturedImages.length; i++) {
-      const response = await fetch(capturedImages[i]);
-      const blob = await response.blob();
-      formData.append("images", blob, `face_${i}.jpg`);
+  const submitRegistration = async () => {
+    if (capturedImages.length < 10 || !studentName) {
+      alert("Please enter a name and capture 10 photos.");
+      return;
     }
 
-    await fetch("http://localhost:8000/register", {
-      method: "POST",
-      body: formData,
-    });
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append("name", studentName);
+
+    try {
+      for (let i = 0; i < capturedImages.length; i++) {
+        const response = await fetch(capturedImages[i]);
+        const blob = await response.blob();
+        formData.append("images", blob, `face_${i}.jpg`);
+      }
+
+      const res = await fetch("http://localhost:8000/register", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        alert("Registration Successful!");
+        setCapturedImages([]);
+        setStudentName("");
+      }
+    } catch (err) {
+      console.error("Upload failed", err);
+    } finally {
+      setIsUploading(false);
+    }
   };
+
+  return (
+    <div className="flex flex-col items-center gap-8 py-10">
+      {/* 1. NAME INPUT */}
+      <div className="w-full max-w-md">
+        <label className="block text-xs uppercase tracking-widest text-gray-500 mb-2">
+          Student Identity
+        </label>
+        <input
+          type="text"
+          value={studentName}
+          onChange={(e) => setStudentName(e.target.value)}
+          placeholder="Enter full name..."
+          className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+        />
+      </div>
+
+      {/* 2. WEBCAM BOX */}
+      <div className="relative group w-full max-w-xl">
+        <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl blur opacity-20 animate-pulse"></div>
+        <div className="relative aspect-video bg-black rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            className="w-full h-full object-cover scale-x-[-1]"
+          />
+
+          {/* Progress Overlay */}
+          <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md p-2 rounded-lg border border-white/5">
+            <div className="flex justify-between text-[10px] uppercase mb-1">
+              <span>Biometric Capture</span>
+              <span>{capturedImages.length} / 10</span>
+            </div>
+            <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                style={{ width: `${(capturedImages.length / 10) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. CONTROL BUTTONS */}
+      <div className="flex gap-4">
+        <button
+          onClick={captureFrame}
+          disabled={capturedImages.length >= 10}
+          className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-full transition-all"
+        >
+          <Camera size={20} />
+          {capturedImages.length >= 10 ? "Capacity Reached" : "Capture Frame"}
+        </button>
+
+        <button
+          onClick={() => setCapturedImages([])}
+          className="p-3 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-500 rounded-full border border-white/10 transition-all"
+        >
+          <Trash2 size={20} />
+        </button>
+      </div>
+
+      {/* 4. THUMBNAIL GRID */}
+      <div className="grid grid-cols-5 gap-2 w-full max-w-2xl">
+        {Array.from({ length: 10 }).map((_, i) => (
+          <div
+            key={i}
+            className="aspect-square bg-white/5 border border-dashed border-white/10 rounded-lg overflow-hidden flex items-center justify-center"
+          >
+            {capturedImages[i] ? (
+              <img
+                src={capturedImages[i]}
+                className="w-full h-full object-cover"
+                alt={`capture-${i}`}
+              />
+            ) : (
+              <span className="text-gray-700 text-xs">{i + 1}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 5. FINAL SUBMIT */}
+      <button
+        onClick={submitRegistration}
+        disabled={capturedImages.length < 10 || !studentName || isUploading}
+        className="w-full max-w-md mt-4 py-4 bg-gradient-to-r from-green-500 to-emerald-600 disabled:from-gray-700 disabled:to-gray-800 text-white font-black uppercase tracking-widest rounded-xl shadow-lg hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
+      >
+        {isUploading ? (
+          "Processing Vectors..."
+        ) : (
+          <>
+            <UserPlus size={20} /> Register Student
+          </>
+        )}
+      </button>
+    </div>
+  );
 }

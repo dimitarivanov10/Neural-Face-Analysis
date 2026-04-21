@@ -1,6 +1,7 @@
 import { HeaderView } from "./components/HeaderView.tsx";
 import { CameraSectionView } from "./components/CameraSectionView.tsx";
 import { TableSectionView } from "./components/TableSectionView.tsx";
+import { RegisterView } from "./components/RegisterView.tsx";
 export default function App() {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-purple-500/30">
@@ -12,6 +13,7 @@ export default function App() {
         <CameraSectionView />
         {/* 3. INTERACTIVE ATTENDANCE TABLE */}
         <TableSectionView />
+        <RegisterView />
       </main>
     </div>
   );

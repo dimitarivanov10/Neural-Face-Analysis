@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback } from "react";
-import Webcam from "react-webcam"; // This was missing
+import Webcam from "react-webcam";
 import { UserCheck, RefreshCw } from "lucide-react";
 
 export function CameraSectionView() {

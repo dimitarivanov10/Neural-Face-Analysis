@@ -28,8 +28,9 @@ def generate_embeddings():
                 embeddings_list.append(embedding)
             if embeddings_list:
                 database[person_name] = np.mean(embeddings_list, axis=0)
-            
-        with open("face_database.pkl", "wb") as f:
+
+        save_path = os.path.join("..", "data", "encodings.pkl")    
+        with open(save_path, "wb") as f:
             pickle.dump(database, f)
 
 if __name__ == "__main__":

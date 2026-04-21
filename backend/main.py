@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-DATA_DIR = "registered_faces";
+DATA_DIR = os.path.join("..", "data", "known_faces")
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR);
 

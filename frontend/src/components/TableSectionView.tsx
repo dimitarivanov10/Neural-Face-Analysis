@@ -1,14 +1,16 @@
 import React, { useState } from "react";
 import { CheckCircle2, XCircle } from "lucide-react";
 
-export function TableSectionView() {
-  const initialStudents = [
-    { id: 1, name: "Ivan Rossi", time: "10:02 AM", status: "Present" },
-    { id: 2, name: "Elena Petrova", time: "-", status: "Absent" },
-    { id: 3, name: "Marko Kovac", time: "10:15 AM", status: "Present" },
-  ];
-  const [students] = useState(initialStudents);
+interface TableProps {
+  students: {
+    id: number;
+    name: string;
+    time: string;
+    status: string;
+  }[];
+}
 
+export function TableSectionView({ students }: TableProps) {
   return (
     <section className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-sm">
       <div className="px-8 py-6 border-b border-white/10 bg-white/[0.02] flex justify-between items-center">

@@ -1,15 +1,17 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
 import Webcam from "react-webcam";
-import { UserCheck, RefreshCw, ShieldCheck } from "lucide-react";
+import { RefreshCw, ShieldCheck } from "lucide-react";
 
-export function CameraSectionView() {
+interface CameraProps {
+  onRecognized: (name: string) => void;
+}
+
+export function CameraSectionView({ onRecognized }: CameraProps) {
   const webcamRef = useRef<Webcam>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Store detection results
   const [detection, setDetection] = useState<{
     identity: string;
-    box: number[] | null; // [x, y, w, h]
+    box: number[] | null;
     confidence: number;
   }>({
     identity: "Scanning...",
@@ -34,19 +36,21 @@ export function CameraSectionView() {
 
         const data = await response.json();
 
-        // Update state instead of alerting
         setDetection({
           identity: data.identity,
           box: data.box,
           confidence: data.confidence || 0,
         });
+
+        if (data.confidence > 0.85 && data.identity !== "Stranger") {
+          onRecognized(data.identity);
+        }
       } catch (error) {
         console.error("Connection failed:", error);
       }
     }
-  }, [webcamRef]);
+  }, [webcamRef, onRecognized]);
 
-  // AUTO-LOOP: Runs every 600ms for a "real-time" feel without melting the CPU
   useEffect(() => {
     const interval = setInterval(() => {
       handleScan();

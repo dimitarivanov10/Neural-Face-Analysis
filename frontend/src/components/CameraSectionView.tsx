@@ -42,7 +42,7 @@ export function CameraSectionView({ onRecognized }: CameraProps) {
           confidence: data.confidence || 0,
         });
 
-        if (data.confidence > 0.85 && data.identity !== "Stranger") {
+        if (data.confidence >= 0.75 && data.identity !== "Stranger") {
           onRecognized(data.identity);
         }
       } catch (error) {

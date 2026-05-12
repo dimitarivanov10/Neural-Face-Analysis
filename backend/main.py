@@ -102,5 +102,19 @@ async def register_student(name: str = Form(...), images: list[UploadFile] = Fil
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
+@app.post("/reset-database")
+async def reset_database():
+    try:
+        if os.path.exists(ENCODINGS_PATH):
+            os.remove(ENCODINGS_PATH)
+        
+        empty_db = {}
+        with open(ENCODINGS_PATH, "wb") as f:
+            pickle.dump(empty_db, f)
+            
+        return {"status": "success", "message": "Database wiped and reset successfully."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

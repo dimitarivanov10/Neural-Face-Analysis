@@ -60,3 +60,55 @@ Neural-Face-Analysis/
     │   ├── components/   # React components (Manager, Camera, Table)
     │   └── App.tsx       # Main layout shell
     └── package.json
+
+# Getting Started
+
+## 1. Backend Setup
+
+Navigate to the backend directory and install the necessary Python libraries:
+
+```bash
+pip install fastapi uvicorn opencv-python numpy keras-facenet
+```
+
+### AI Database Preparation
+
+1. Organize folders in `data/known_faces/` by person name.
+2. Add clear face photos to each folder.
+3. Generate the embeddings file:
+
+```bash
+python enroll.py
+```
+
+### Run the Server
+
+```bash
+python main.py
+```
+
+---
+
+## 2. Frontend Setup
+
+Navigate to the frontend directory and install the dependencies:
+
+```bash
+npm install
+```
+
+### Run the Application
+
+```bash
+npm run dev
+```
+
+---
+
+## 3. Environment Details
+
+| Service  | URL                       |
+|----------|---------------------------|
+| Backend  | http://localhost:8000     |
+| Frontend | http://localhost:3000     |
+
